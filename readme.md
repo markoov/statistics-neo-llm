@@ -14,7 +14,8 @@
 
 命名实体识别的工作主要是从期刊摘要中抽取【研究对象】和【研究方法】。
 
-<details><summary>数据标注</summary>
+**数据标注**
+
 数据采用BIO标注，一共只有两类实体：【研究对象】和【研究方法】。PS1：别骂实体少，俺也不是想偷懒。
 
 首先用GPT4进行初步的抽取，然后再人工核查，数据集的质量个人感觉还是不错的。
@@ -22,7 +23,7 @@
 提示词和大模型没有使用langchain或llama-index，自己编了一套提示词，您可以在[statistics-ner/data/gpt_data_tagging.py](statistics-ner/data/gpt_data_tagging.py)中查看。
 
 PS2：由于本项目是于2023年做的，直到现在才上传github，目前（2024年7月）GPT4的API接口已经无法使用，各位可以维持提示词不变，采用其他的大语言模型进行数据标注，也可以使用一些通用的实体识别模型（如RaNER等）进行初步的数据标注。
-</details>
+
 
 **快速运行**
 如果你想直接进行运行并查看效果，而非在自己的数据上进行预训练。只需要：
@@ -57,11 +58,10 @@ python main.py
 
 ![ner-training](assets/ner-training.png)
 
-<details><summary>使用你自己的数据进行训练</summary>
+**使用你自己的数据进行训练**
 
 想要使用你自己的数据，训练你自己的模型，你需要按照[data](statistics-ner/data/val_data.json)的格式，构建BIO数据集，主要特征只需要包含id，text和label三列。数据标注和制作训练集、验证集的过程为简单的python数据分析的内容，这里不做赘述。
 
-</details>
 
 ## NEO4j知识图谱构建
 
@@ -92,13 +92,12 @@ for i in data:
 
 **感谢**：[hiyouga/LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)项目提供的便捷训练框架。PS：DeepSpeed训练的部分做的太好了！十分方便！
 
-<details><summary>数据准备</summary>
+**数据准备**
 
 针对大语言模型的微调，我们使用GPT4、GPT3.5、Qwen、GLM3等模型构建了统计学问答对数据集，各位可以在[data](statistics-llm/statistic_train.json)中自行查看，我们针对数据进行了泛化（每个问答对维持output不变，对input泛化5次）。
 
 PS：在实际场景中，建议谨慎进行问答对泛化，如果你有具体的应用场景，可以酌情使用。
 
-</details>
 
 **训练步骤**
 
