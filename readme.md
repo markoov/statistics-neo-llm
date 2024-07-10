@@ -24,10 +24,10 @@
 PS2：由于本项目是于2023年做的，直到现在才上传github，目前（2024年7月）GPT4的API接口已经无法使用，各位可以维持提示词不变，采用其他的大语言模型进行数据标注，也可以使用一些通用的实体识别模型（如RaNER等）进行初步的数据标注。
 </details>
 
-<details><summary>快速运行</summary>
+**快速运行**
 如果你想直接进行运行并查看效果，而非在自己的数据上进行预训练。只需要：
 
-第一步，将本项目拖至您的本地，同时安装python的依赖库，如何创建python环境，这里就不进行赘述了。
+第一步，将本项目拖至您的本地，同时安装python的依赖库，关于如何创建python环境，这里就不进行赘述了。
 
 ```bash
 git clone --depth 1 https://github.com/markoov/statistics-neo-llm.git
@@ -57,8 +57,6 @@ python main.py
 
 ![ner-training](assets/ner-training.png)
 
-</details>
-
 <details><summary>使用你自己的数据进行训练</summary>
 
 想要使用你自己的数据，训练你自己的模型，你需要按照[data](statistics-ner/data/val_data.json)的格式，构建BIO数据集，主要特征只需要包含id，text和label三列。数据标注和制作训练集、验证集的过程为简单的python数据分析的内容，这里不做赘述。
@@ -67,7 +65,12 @@ python main.py
 
 ## NEO4j知识图谱构建
 
-在使用该项目构建neo4j知识图谱前，我们建议您拥有基本的neo4j使用经验。由于这只是一个基础的入门项目，作者将根据本项目的反响来判断是否对这一部分内容进行详细的介绍和叙述。为了方便部分已经有基础的同学快速构建知识图谱，我们将所需的所有数据进行了开源。包括[原始数据](statistics-neo/ori-dataset/origin_data.csv)和[实体及关系数据](statistics-neo/result-data-json)
+在使用该项目构建neo4j知识图谱前，我们建议您拥有基本的neo4j使用经验。
+
+由于这只是一个基础的入门项目，作者将根据本项目的反响来判断是否对这一部分内容进行详细的介绍和叙述。
+
+为了方便部分已经有基础的同学快速构建知识图谱，我们将所需的所有数据进行了开源。包括[原始数据](statistics-neo/ori-dataset/origin_data.csv)和[实体及关系数据](statistics-neo/result-data-json)
+
 您可以使用py2neo导入该数据，这里将给出一份示例。
 
 ```bash
@@ -82,8 +85,8 @@ for i in data:
     graph.run(query_body)
 ```
 
-当然，我们更建议您使用`neo4j-admin database import full`的方法导入数据，这将为您节省99%的时间！
-只是可能需要您对我们所提供的json数据进行一些必要的处理。
+当然，我们**更建议**您使用`neo4j-admin database import full`的方法导入数据，这将为您节省99%的时间！
+只是这可能需要您对我们所提供的json数据进行一些必要的处理。
 
 ## 微调大语言模型
 
@@ -97,7 +100,7 @@ PS：在实际场景中，建议谨慎进行问答对泛化，如果你有具体
 
 </details>
 
-<details><summary>训练步骤</summary>
+**训练步骤**
 
 第一步，拉下LLaMA-Factory项目。
 
@@ -131,9 +134,7 @@ git clone https://github.com/hiyouga/LLaMA-Factory.git
 sh sft.sh
 ```
 
-</details>
-
-<details><summary>微调模型部署</summary>
+**微调模型部署**
 
 我们推荐使用peft库导入lora模型的参数。
 这里给出一个简单的示例，我们推荐您根据各大开源模型给出的api框架（uvicorn）配置您的大模型服务。
@@ -146,5 +147,3 @@ model = AutoModel.from_pretrained(ChatGLM3_PATH, trust_remote_code=True, device_
 model = PeftModel.from_pretrained(model, "你训练好的lora模型的路径")
 model = model.eval()
 ```
-
-</details>
