@@ -30,6 +30,7 @@ class Trainer:
         self.total_step = total_step
 
     def train(self):
+        now_step = 0
         for epoch in range(1, self.epochs + 1):
             self.model.train()
             for step, batch_data in tqdm(enumerate(self.train_loader), total=len(self.train_loader), leave=True):
@@ -45,11 +46,12 @@ class Trainer:
                 self.optimizer.step()
                 # PS：关于scheduler是epoch结束后进行step还是batch结束后step，在下不太清楚，有待后续讨论
                 self.scheduler.step()
-                if step % self.save_step == 0 and step > 1:
-                    loss_report = f'epoch{epoch}-setp{step}-loss:{loss.item()}'
+                now_step += 1
+                if now_step % self.save_step == 0 and now_step > 1:
+                    loss_report = f'epoch{epoch}-setp{now_step}-loss:{loss.item()}'
                     print(loss_report + "-model will be save soon")
                     save_to_txt(loss_report, os.path.join(self.output_dir, "loss_for_step.txt"))
-                    torch.save(self.model.state_dict(), os.path.join(self.output_dir, f"checkpoint_{step}.bin"))
+                    torch.save(self.model.state_dict(), os.path.join(self.output_dir, f"checkpoint_{now_step}.bin"))
                     # PS：当你进行断点训练时，切记同时保存optimizer和scheduler的参数
                     # 将self.model.state_dict()替换为{"model": self.model.state_dict(), "optimizer": self.optimizer.state_dict(), "scheduler": self.scheduler.state_dict()}
                     # 断点训练导入模型的方法相信大家都会，这里不做赘述
