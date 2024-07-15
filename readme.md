@@ -5,8 +5,11 @@
 - [命名实体识别-NER](#命名实体识别)
 - [NEO4j知识图谱构建](#NEO4j知识图谱构建)
 - [微调大语言模型-LORA](#微调大语言模型)
+- [NEO4J+LLM问答系统-RAG](#问答系统)
 
 ## 命名实体识别
+
+### 简介
 
 这是一个基于BERT-BILSTM-CRF模型的命名实体识别项目，使用torch进行建模，目的是为了帮助初学者快速构建NER模型，因此从dataloader到train基本都进行了注释。
 
@@ -37,7 +40,10 @@ cd statistics-neo-llm
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-第二步，将bert模型下载至您的本地模型目录，可以通过modelscope或huggingface下载，也可以直接将您本地的模型文件复制进来。这里给出一个从modelscope中下载roberta-wwm-ext模型的代码。下载完成之后，你需要在[config](statistics-ner/config.py)中修改`self.bert_dir`参数，您下载了什么模型，直接替换其名字便可。
+第二步，将bert模型下载至您的本地模型目录，可以通过modelscope或huggingface下载，也可以直接将您本地的模型文件复制进来。这里给出一个从modelscope中下载roberta-wwm-ext模型的代码。
+
+下载完成之后，你需要在[config](statistics-ner/config.py)中修改`self.bert_dir`参数，您下载了什么模型，直接替换其名字便可。
+
 PS：根据经验，相同size的bert模型，训练的最终结果不会有特别显著的差距。
 
 ```bash
@@ -46,14 +52,16 @@ git lfs install
 git clone ----depth 1 https://www.modelscope.cn/dienstag/chinese-bert-wwm-ext.git 
 ```
 
-第三步，回到statistics-ner目录下，开始训练。PS：注意当前目录即可，因为config内没有用os查询当前目录，在下也懒得改了。
+第三步，回到statistics-ner目录下，开始训练。
+
+PS：注意您本地运行时的当前路径即可，因为config内没有用os查询当前目录，在下也懒得改了。
 
 ```bash
 cd ..
 python main.py
 ```
 
-训练步骤使用tqdm进行了进度条管理，每一个epoch进行一次验证，每save_step步保存一次模型，训练日志将保存loss和P\R\ACC等指标。日志文件将存入statistics-ner/checkpoint/statistics目录。
+训练步骤使用tqdm进行了进度条管理，每一个epoch进行一次验证，每save_step步（默认为5000步）保存一次模型，训练日志将保存loss和P\R\ACC等指标。日志文件将存入statistics-ner/checkpoint/statistics目录。
 
 在下使用了一块3090显卡进行训练，在本项目的数据集和参数配置下，大约需要占用18GB的显存，一个epoch耗时在2分钟左右。这里给出一个训练了2个epoch的结果，如果希望结果能更加好看，估计需要训练30轮左右。
 
@@ -63,8 +71,9 @@ python main.py
 
 想要使用你自己的数据，训练你自己的模型，你需要按照[data](statistics-ner/data/val_data.json)的格式，构建BIO数据集，主要特征只需要包含id，text和label三列。数据标注和制作训练集、验证集的过程为简单的python数据分析的内容，这里不做赘述。
 
-
 ## NEO4j知识图谱构建
+
+### 导入数据
 
 在使用该项目构建neo4j知识图谱前，我们建议您拥有基本的neo4j使用经验。
 
@@ -86,19 +95,29 @@ for i in data:
     graph.run(query_body)
 ```
 
-当然，我们**更建议**您使用`neo4j-admin database import full`的方法导入数据，这将为您节省99%的时间！
-只是这可能需要您对我们所提供的json数据进行一些必要的处理。
+当然，我们**更建议**您使用命令行`neo4j-admin database import full`的方法导入数据，这将为您节省99%的时间！只是这可能需要您对我们所提供的json数据进行一些必要的处理。
+
+### 效果展示
+
+在这期间，经过了数据获取、实体识别、实体对齐、图谱构建等一系列工作。
+
+我们最终构建了实体数量超过14万个，关系边数量超过32万对的统计学中文期刊知识图谱，这里给出一个简单的前端页面展示。
+
+![neo4j-database](assets/neo4j-database.png)
 
 ## 微调大语言模型
 
-**感谢**：[hiyouga/LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)项目提供的便捷训练框架。PS：DeepSpeed训练的部分做的太好了！十分方便！
+**感谢**：[hiyouga/LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)项目提供的便捷训练框架。
+
+PS：DeepSpeed训练的部分做的太好了！十分方便！
 
 ### 数据准备
 
 针对大语言模型的微调，我们使用GPT4、GPT3.5、Qwen、GLM3等模型构建了统计学问答对数据集，各位可以在[data](statistics-llm/statistic_train.json)中自行查看，我们针对数据进行了泛化（每个问答对维持output不变，对input泛化5次）。
 
-PS：在实际场景中，建议谨慎进行问答对泛化，如果你有具体的应用场景，可以酌情使用。
+PS1：在实际场景中，建议谨慎进行问答对泛化，如果你有具体的应用场景，可以酌情使用。
 
+PS2：数据集中的instruction部分各位可以自行修改。
 
 ### 训练步骤
 
@@ -122,7 +141,7 @@ git clone https://github.com/hiyouga/LLaMA-Factory.git
   }
 ```
 
-第三步，下载大语言模型至你的本地目录，你可以自己新建一个目录，没必要将大模型文件放在该项目的目录下，当然LLaMA-Factory项目也是如此。
+第三步，下载大语言模型文件至你的本地目录，你可以自己新建一个文件夹，将所有的开源模型下载至那个文件夹内，以供所有的项目使用，没必要将大模型文件放在该项目的目录下，当然LLaMA-Factory项目也是如此。
 
 第四步，按照您的需求配置sft.sh文件，由于项目更新，过去的lora配置找不着了，这里给出一个我之前用弱智吧数据训练的示例[sft](statistics-llm/sft.sh)。为方便各位使用，在下针对部分参数进行了注释。
 
@@ -137,6 +156,7 @@ sh sft.sh
 ### 微调模型部署
 
 我们推荐使用peft库导入lora模型的参数。
+
 这里给出一个简单的示例，我们推荐您根据各大开源模型给出的api框架（uvicorn）配置您的大模型服务。
 
 ```bash
@@ -147,3 +167,13 @@ model = AutoModel.from_pretrained(ChatGLM3_PATH, trust_remote_code=True, device_
 model = PeftModel.from_pretrained(model, "你训练好的lora模型的路径")
 model = model.eval()
 ```
+
+## 问答系统
+
+### 简介（更新中）
+
+一个简单的介绍：这里我们将使用uvicorn部署大模型服务，使用py2neo和requests来连接知识图谱和大语言模型，使用streamlit来起前端界面。
+
+1、没有使用langchain的原因：langchain的核心是提示词工程，其qachain部分的提示词全为英文组成，在中文的知识图谱及开源大语言模型下效果并不理想（除非您使用gpt4）。因此我们重新写了一版提示词，虽然看起来效率变低了，但至少能在一定程度上保证问答的效果。PS：而且就流程上看，langchain的graphchain复杂度颇高，有点给llm出难题的意思，碰上复杂点的图谱基本必出错就是了（笑）。
+
+2、关于RAG：目前而言，针对各种数据库的rag方法已经很多了，大部分做的都很完善，在下也在学习中，本项目的rag部分是在下从头独立完成的，连langchain都没用，可见除了原创性以外其他都不能够保证QAQ，希望能给各位同学一点启发。

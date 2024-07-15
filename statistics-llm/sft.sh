@@ -21,7 +21,7 @@ CUDA_VISIBLE_DEVICES=0 python /data/LLaMA-Factory/src/train_bash.py \
     --stage sft \
     --do_train \
     --model_name_or_path /data/ChatGLM3/chatglm3-6b \
-    --dataset ruozhiba,ruozhiba2 \
+    --dataset ruozhiba \
     --dataset_dir /data/LLaMA-Factory/data \
     --template chatglm3 \
     --finetuning_type lora \
@@ -45,7 +45,7 @@ CUDA_VISIBLE_DEVICES=0 python /data/LLaMA-Factory/src/train_bash.py \
     --load_best_model_at_end \
     --learning_rate 2e-4 \
     --num_train_epochs 10.0 \
-    --max_samples 5000 \
+    --max_samples 4096 \
     --val_size 0.1 \
     --plot_loss \
     --fp16
