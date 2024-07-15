@@ -7,7 +7,9 @@
 - [微调大语言模型-LORA](#微调大语言模型)
 - [NEO4J+LLM问答系统-RAG](#问答系统)
 
+
 ## 命名实体识别
+
 
 ### 简介
 
@@ -16,6 +18,7 @@
 数据由我们亲爱的Z网提供，使用selenium爬取了基本信息，包含摘要、关键词、题目、作者、通讯作者等。
 
 命名实体识别的工作主要是从期刊摘要中抽取【研究对象】和【研究方法】。
+
 
 ### 数据标注
 
@@ -61,17 +64,20 @@ cd ..
 python main.py
 ```
 
-训练步骤使用tqdm进行了进度条管理，每一个epoch进行一次验证，每save_step步（默认为5000步）保存一次模型，训练日志将保存loss和P\R\ACC等指标。日志文件将存入statistics-ner/checkpoint/statistics目录。
+训练步骤使用tqdm进行了进度条管理，每一个epoch进行一次验证，每save_step步（默认为500步）保存一次模型，训练日志将保存loss和P\R\ACC等指标。日志文件将存入statistics-ner/checkpoint/statistics目录。
 
 在下使用了一块3090显卡进行训练，在本项目的数据集和参数配置下，大约需要占用18GB的显存，一个epoch耗时在2分钟左右。这里给出一个训练了2个epoch的结果，如果希望结果能更加好看，估计需要训练30轮左右。
 
 ![ner-training](assets/ner-training.png)
 
+
 ### 使用你自己的数据进行训练
 
 想要使用你自己的数据，训练你自己的模型，你需要按照[data](statistics-ner/data/val_data.json)的格式，构建BIO数据集，主要特征只需要包含id，text和label三列。数据标注和制作训练集、验证集的过程为简单的python数据分析的内容，这里不做赘述。
 
+
 ## NEO4j知识图谱构建
+
 
 ### 导入数据
 
@@ -97,6 +103,7 @@ for i in data:
 
 当然，我们**更建议**您使用命令行`neo4j-admin database import full`的方法导入数据，这将为您节省99%的时间！只是这可能需要您对我们所提供的json数据进行一些必要的处理。
 
+
 ### 效果展示
 
 在这期间，经过了数据获取、实体识别、实体对齐、图谱构建等一系列工作。
@@ -105,11 +112,13 @@ for i in data:
 
 ![neo4j-database](assets/neo4j-database.png)
 
+
 ## 微调大语言模型
 
 **感谢**：[hiyouga/LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory)项目提供的便捷训练框架。
 
 PS：DeepSpeed训练的部分做的太好了！十分方便！
+
 
 ### 数据准备
 
@@ -118,6 +127,7 @@ PS：DeepSpeed训练的部分做的太好了！十分方便！
 PS1：在实际场景中，建议谨慎进行问答对泛化，如果你有具体的应用场景，可以酌情使用。
 
 PS2：数据集中的instruction部分各位可以自行修改。
+
 
 ### 训练步骤
 
@@ -153,6 +163,7 @@ git clone https://github.com/hiyouga/LLaMA-Factory.git
 sh sft.sh
 ```
 
+
 ### 微调模型部署
 
 我们推荐使用peft库导入lora模型的参数。
@@ -168,7 +179,9 @@ model = PeftModel.from_pretrained(model, "你训练好的lora模型的路径")
 model = model.eval()
 ```
 
+
 ## 问答系统
+
 
 ### 简介（更新中）
 
